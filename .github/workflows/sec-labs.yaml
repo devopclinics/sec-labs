@@ -29,4 +29,4 @@ jobs:
         run: docker build -t ${{ secrets.DOCKER_USERNAME }}/sec-labs:v9 .
       # Step 5: Push the Docker image to Docker Hub
       - name: Push Docker Image
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/sec-labs:v8
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/sec-labs:v9
