@@ -21,7 +21,7 @@ ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
 # Install Flask and Flask-SocketIO
-RUN pip3 install flask flask-socketio eventlet
+RUN pip3 install flask flask-socketio eventlet psycopg2-binary
 
 # Copy the application files
 COPY interactive_terminal.py /interactive_terminal.py
