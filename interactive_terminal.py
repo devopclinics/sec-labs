@@ -2,26 +2,27 @@ from flask import Flask, render_template
 from flask_socketio import SocketIO
 import os
 import pty
+import select
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'supersecret!'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-master_fd = None  # File descriptor for the terminal
+master_fd = None  # Master file descriptor for the terminal
 
 @app.route('/')
 def index():
     return render_template('terminal.html')
 
 @socketio.on('connect')
-def connect():
-    global master_fd
+def on_connect():
+    global master_fd, slave_fd
+    print("Client connected")
     try:
-        # Open a pseudo-terminal
         master_fd, slave_fd = pty.openpty()
         pid = os.fork()
         if pid == 0:
-            # Child process replaces itself with bash
+            # Child process to run bash
             os.close(master_fd)
             os.dup2(slave_fd, 0)  # stdin
             os.dup2(slave_fd, 1)  # stdout
@@ -29,24 +30,26 @@ def connect():
             os.execlp("bash", "bash")
         else:
             os.close(slave_fd)  # Parent process closes slave end
-            socketio.start_background_task(target=read_output)
+            socketio.start_background_task(target=read_and_forward_output, fd=master_fd)
     except Exception as e:
         print(f"Error during terminal setup: {e}")
-        socketio.emit('output', f"Server error: {e}")
+        socketio.emit('output', f"Error: {e}")
 
-def read_output():
+@socketio.on('disconnect')
+def on_disconnect():
+    print("Client disconnected")
+
+def read_and_forward_output(fd):
     """Continuously read from the pseudo-terminal and send data to the frontend."""
-    global master_fd
-    while True:
-        try:
-            data = os.read(master_fd, 1024).decode()
+    try:
+        while True:
+            data = os.read(fd, 1024).decode()
             socketio.emit('output', data)
-        except Exception as e:
-            print(f"Error reading output: {e}")
-            break
+    except Exception as e:
+        print(f"Error reading output: {e}")
 
 @socketio.on('input')
-def handle_input(data):
+def on_input(data):
     """Write user input to the pseudo-terminal."""
     global master_fd
     try:

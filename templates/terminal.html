@@ -14,24 +14,31 @@
             cursorBlink: true,
             theme: { background: '#000000', foreground: '#ffffff' }
         });
+
         const socket = io();
 
         term.open(document.getElementById('terminal'));
 
+        // Send user input to the server
         term.onData(data => {
-            socket.emit('input', data); // Send user input to the server
+            socket.emit('input', data);
         });
 
+        // Display server output in the terminal
         socket.on('output', data => {
-            term.write(data); // Display server output on the terminal
+            term.write(data);
         });
 
+        // Handle connection events
         socket.on('connect', () => {
             term.write('\x1b[32mConnected to server.\x1b[0m\r\n');
         });
 
         socket.on('disconnect', () => {
             term.write('\x1b[31mDisconnected from server.\x1b[0m\r\n');
+            setTimeout(() => {
+                socket.connect(); // Reconnect automatically
+            }, 3000);
         });
     </script>
 </body>
