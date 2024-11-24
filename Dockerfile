@@ -69,6 +69,11 @@
 # Pull base image
 FROM ubuntu:20.04
 
+# Configure locales for UTF-8
+RUN apt-get update && apt-get install -y locales && \
+    locale-gen en_US.UTF-8 && \
+    update-locale LANG=en_US.UTF-8
+
 # Set environment variables
 ENV LANG=C.UTF-8
 
