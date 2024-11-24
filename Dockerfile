@@ -47,7 +47,7 @@ RUN apt-get -y update && \
     | tar xzC /usr/local/bin && \
     apt-get purge --auto-remove -y curl && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists*
+    rm -rf /var/lib/apt/lists/*
 
 # Add startup script for Gotty
 COPY /run_gotty.sh /run_gotty.sh
@@ -63,4 +63,4 @@ RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/
 EXPOSE 22 80
 
 # Entry point for SSH and Gotty
-CMD ["/bin/bash","/run_gotty.sh"]
+CMD ["/bin/bash", "/run_gotty.sh"]
