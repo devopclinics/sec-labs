@@ -7,7 +7,7 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   rules:
-    - host: www.seclabs-homework.com
+    - host: localhost
       http:
         paths:
           - path: /
