@@ -25,13 +25,15 @@ def index():
 
                 function sendCommand() {
                     const command = document.getElementById('command').value;
+                    console.log('Sending command:', command); // Debugging
                     socket.emit('execute', command);
                     document.getElementById('command').value = '';
                 }
 
                 socket.on('response', function(data) {
+                    console.log('Response received:', data); // Debugging
                     const output = document.getElementById('output');
-                    output.value += data + '\n';
+                    output.value += data + '\\n';
                 });
             </script>
         </body>
@@ -40,11 +42,15 @@ def index():
 
 @socketio.on('execute')
 def execute_command(command):
+    print(f"Command received: {command}")  # Debugging
     try:
         output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
+        print(f"Command output: {output.decode()}")  # Debugging
         socketio.emit('response', output.decode())
     except subprocess.CalledProcessError as e:
-        socketio.emit('response', e.output.decode())
+        error_msg = e.output.decode()
+        print(f"Command failed: {error_msg}")  # Debugging
+        socketio.emit('response', error_msg)
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)
