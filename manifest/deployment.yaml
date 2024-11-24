@@ -23,7 +23,7 @@ spec:
           image: dclinics/sec-labs:v3
           ports:
             - containerPort: 22
-            - containerPort: 80
+            - containerPort: 5000
           volumeMounts:
             - mountPath: /home/users
               name: user-data
@@ -44,6 +44,6 @@ spec:
       targetPort: 22
     - protocol: TCP
       name: web-terminal
-      port: 80
-      targetPort: 80
+      port: 5000
+      targetPort: 5000
   type: ClusterIP
