@@ -33,7 +33,7 @@ def index():
                 socket.on('response', function(data) {
                     console.log('Response received:', data); // Debugging
                     const output = document.getElementById('output');
-                    output.value += data + '\\n';
+                    output.value += data + '\n';
                 });
             </script>
         </body>
