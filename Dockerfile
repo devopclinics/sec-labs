@@ -25,6 +25,9 @@
 FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV GOTTY_TAG_VER v1.0.1
 
 # Install necessary tools
 RUN apt-get update && apt-get install -y \
@@ -38,8 +41,17 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean
 
 # Install gotty for web-based terminal
-RUN curl -Lo /usr/local/bin/gotty https://github.com/yudai/gotty/releases/download/v1.0.1/gotty_linux_amd64 && \
-    chmod +x /usr/local/bin/gotty
+RUN apt-get -y update && \
+    apt-get install -y curl && \
+    curl -sLk https://github.com/yudai/gotty/releases/download/${GOTTY_TAG_VER}/gotty_linux_amd64.tar.gz \
+    | tar xzC /usr/local/bin && \
+    apt-get purge --auto-remove -y curl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists*
+
+# Add startup script for Gotty
+COPY /run_gotty.sh /run_gotty.sh
+RUN chmod 744 /run_gotty.sh
 
 # Configure SSH
 RUN mkdir /var/run/sshd
@@ -47,12 +59,8 @@ RUN echo 'root:password' | chpasswd
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
 
-# Verify Gotty installation
-RUN curl -L "https://github.com/yudai/gotty/releases/latest/download/gotty_linux_amd64" -o /usr/local/bin/gotty && \
-    chmod +x /usr/local/bin/gotty
-
 # Expose SSH and Gotty ports
 EXPOSE 22 80
 
 # Entry point for SSH and Gotty
-CMD ["/bin/bash", "-c", "service ssh start && gotty -w --port 80 --address 0.0.0.0 /bin/bash"]
+CMD ["/bin/bash","/run_gotty.sh"]
