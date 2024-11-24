@@ -19,8 +19,8 @@ spec:
           persistentVolumeClaim:
             claimName: ubuntu-pvc
       containers:
-        - name: ubuntu-container
-          image: your-repo/containerized-ubuntu:latest
+        - name: sec-labs
+          image: dclinics/sec-labs:v1
           ports:
             - containerPort: 22
           volumeMounts:
@@ -36,4 +36,20 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi
+      storage: 20Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ubuntu-server-service
+  labels:
+    app: ubuntu-server
+spec:
+  selector:
+    app: ubuntu-server
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 22
+  type: ClusterIP
