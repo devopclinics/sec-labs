@@ -55,4 +55,4 @@ RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/
 EXPOSE 22 80
 
 # Entry point for SSH and Gotty
-CMD ["/bin/bash", "-c", "service ssh start && gotty -w /bin/bash"]
+CMD ["/bin/bash", "-c", "service ssh start && gotty -w --port 80 --address 0.0.0.0 /bin/bash"]

@@ -39,9 +39,11 @@ spec:
     app: ubuntu-server
   ports:
     - protocol: TCP
+      name: ssh
       port: 22
       targetPort: 22
     - protocol: TCP
+      name: web-terminal
       port: 80
       targetPort: 80
   type: ClusterIP
