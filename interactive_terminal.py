@@ -1,4 +1,4 @@
-from flask import Flask, render_template, session
+from flask import Flask, render_template
 from flask_socketio import SocketIO, disconnect
 import os
 import pty
@@ -6,7 +6,7 @@ import traceback
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app, cors_allowed_origins="*", manage_session=True)
+socketio = SocketIO(app, cors_allowed_origins="*", manage_session=False)
 
 # Global variables for terminal
 terminals = {}
@@ -19,7 +19,7 @@ def index():
 @socketio.on('connect')
 def on_connect():
     global terminals, sessions
-    session_id = session.sid
+    sid = os.urandom(8).hex()  # Generate a unique session ID
     try:
         master_fd, slave_fd = pty.openpty()
         pid = os.fork()
@@ -31,39 +31,39 @@ def on_connect():
             os.execlp("bash", "bash")
         else:
             os.close(slave_fd)
-            terminals[session_id] = master_fd
-            sessions[session_id] = True
-            print(f"Client {session_id} connected")
-            socketio.start_background_task(target=read_output, session_id=session_id)
+            terminals[sid] = master_fd
+            sessions[sid] = True
+            print(f"Client {sid} connected")
+            socketio.start_background_task(target=read_output, sid=sid)
     except Exception as e:
-        print(f"Error during connection setup for session {session_id}: {e}")
+        print(f"Error during connection setup for session {sid}: {e}")
         traceback.print_exc()
         disconnect()
 
 @socketio.on('disconnect')
 def on_disconnect():
-    session_id = session.sid
-    if session_id in terminals:
-        os.close(terminals[session_id])
-        del terminals[session_id]
-        del sessions[session_id]
-    print(f"Client {session_id} disconnected")
+    sid = list(sessions.keys())[0] if sessions else None
+    if sid in terminals:
+        os.close(terminals[sid])
+        del terminals[sid]
+        del sessions[sid]
+    print(f"Client {sid} disconnected")
 
 @socketio.on('input')
 def handle_input(data):
-    session_id = session.sid
-    if session_id in terminals:
-        os.write(terminals[session_id], data.encode())
+    sid = list(sessions.keys())[0] if sessions else None
+    if sid in terminals:
+        os.write(terminals[sid], data.encode())
     else:
-        print(f"Invalid session {session_id}, ignoring input")
+        print(f"Invalid session {sid}, ignoring input")
 
-def read_output(session_id):
-    while sessions.get(session_id):
+def read_output(sid):
+    while sessions.get(sid):
         try:
-            data = os.read(terminals[session_id], 1024).decode()
-            socketio.emit('output', data, to=session_id)
+            data = os.read(terminals[sid], 1024).decode()
+            socketio.emit('output', data)
         except Exception as e:
-            print(f"Error reading from terminal for session {session_id}: {e}")
+            print(f"Error reading from terminal for session {sid}: {e}")
             break
 
 if __name__ == '__main__':
