@@ -69,35 +69,24 @@
 # Pull base image
 FROM ubuntu:20.04
 
-# Set glibc version and other ENVs
-ENV GLIBC_VERSION=2.26 \
-    LANG=C.UTF-8
+# Set environment variables
+ENV LANG=C.UTF-8
 
-# Install necessary build dependencies and glibc
-RUN set -ex && \
-    # Install required dependencies
-    apt-get update && apt-get install -y \
+# Install necessary dependencies
+RUN apt-get update && apt-get install -y \
     ca-certificates \
     curl \
     wget \
     gcc \
     libc6-dev \
     make \
-    && \
-    # Download and install glibc
-    curl -sSL https://github.com/sgerrand/alpine-pkg-glibc/releases/download/${GLIBC_VERSION}/glibc_${GLIBC_VERSION}-1_amd64.deb -o /tmp/glibc.deb && \
-    curl -sSL https://github.com/sgerrand/alpine-pkg-glibc/releases/download/${GLIBC_VERSION}/glibc-bin_${GLIBC_VERSION}-1_amd64.deb -o /tmp/glibc-bin.deb && \
-    curl -sSL https://github.com/sgerrand/alpine-pkg-glibc/releases/download/${GLIBC_VERSION}/glibc-i18n_${GLIBC_VERSION}-1_all.deb -o /tmp/glibc-i18n.deb && \
-    dpkg -i /tmp/*.deb && \
-    rm -f /tmp/*.deb && \
-    # Configure locale to UTF-8
-    locale-gen C.UTF-8 && \
-    echo "export LANG=C.UTF-8" > /etc/profile.d/locale.sh && \
-    dpkg-reconfigure --frontend=noninteractive locales && \
-    # Clean up unnecessary packages
-    apt-get purge -y gcc make libc6-dev && \
-    apt-get autoremove -y && \
-    apt-get clean
+    locales \
+    jq \
+    && apt-get clean
+
+# Configure locales for UTF-8
+RUN locale-gen C.UTF-8 && \
+    update-locale LANG=C.UTF-8
 
 # Install GoTTY (web-based terminal)
 RUN curl -sSL -O https://github.com/yudai/gotty/releases/download/v1.0.1/gotty_linux_amd64.tar.gz && \
@@ -105,9 +94,10 @@ RUN curl -sSL -O https://github.com/yudai/gotty/releases/download/v1.0.1/gotty_l
     mv gotty /usr/local/bin/ && \
     rm -f gotty_linux_amd64.tar.gz
 
-# Install additional dependencies (jq)
-RUN apt-get update && apt-get install -y jq && apt-get clean
+# Clean up unnecessary build dependencies
+RUN apt-get purge -y gcc make libc6-dev && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/*
 
 # Set standard start command for GoTTY
 CMD ["/usr/local/bin/gotty", "--permit-write", "--reconnect", "/bin/bash"]
-
