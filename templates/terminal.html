@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Terminal</title>
     <script src="https://cdn.jsdelivr.net/npm/xterm@4.19.0/lib/xterm.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@4.19.0/css/xterm.css" />
@@ -12,7 +14,10 @@
     <script>
         const term = new Terminal({
             cursorBlink: true,
-            theme: { background: '#000000', foreground: '#ffffff' }
+            theme: {
+                background: '#000000',
+                foreground: '#ffffff'
+            }
         });
 
         const socket = io();
@@ -33,9 +38,6 @@
 
         socket.on('disconnect', () => {
             term.write('\x1b[31mDisconnected from server.\x1b[0m\r\n');
-            setTimeout(() => {
-                socket.connect();
-            }, 3000);
         });
     </script>
 </body>
