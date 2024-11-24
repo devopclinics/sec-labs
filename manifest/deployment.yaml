@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ubuntu-server
+  labels:
+    app: ubuntu-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ubuntu-server
+  template:
+    metadata:
+      labels:
+        app: ubuntu-server
+    spec:
+      volumes:
+        - name: user-data
+          persistentVolumeClaim:
+            claimName: ubuntu-pvc
+      containers:
+        - name: ubuntu-container
+          image: your-repo/containerized-ubuntu:latest
+          ports:
+            - containerPort: 22
+          volumeMounts:
+            - mountPath: /home/users
+              name: user-data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ubuntu-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
