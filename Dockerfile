@@ -26,7 +26,6 @@ FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-
 # Install necessary tools
 RUN apt-get update && apt-get install -y \
     openssh-server \
@@ -38,9 +37,6 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     && apt-get clean
 
-
-
-
 # Install gotty for web-based terminal
 RUN curl -Lo /usr/local/bin/gotty https://github.com/yudai/gotty/releases/download/v1.0.1/gotty_linux_amd64 && \
     chmod +x /usr/local/bin/gotty
@@ -51,12 +47,9 @@ RUN echo 'root:password' | chpasswd
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
 
-# verify that the ssh server is running gotty is running
-
-RUN curl -Lo /usr/local/bin/gotty https://github.com/yudai/gotty/releases/download/v1.0.1/gotty_linux_amd64 && \
-    chmod +x /usr/local/bin/gotty && \
-    /usr/local/bin/gotty --version
-
+# Verify Gotty installation
+RUN curl -L "https://github.com/yudai/gotty/releases/latest/download/gotty_linux_amd64" -o /usr/local/bin/gotty && \
+    chmod +x /usr/local/bin/gotty
 
 # Expose SSH and Gotty ports
 EXPOSE 22 80
