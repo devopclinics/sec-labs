@@ -10,16 +10,28 @@
     <h1>Interactive Terminal</h1>
     <div id="terminal" style="height: 500px; width: 100%; background: black;"></div>
     <script>
-        const term = new Terminal();
+        const term = new Terminal({
+            cursorBlink: true,
+            theme: { background: '#000000', foreground: '#ffffff' }
+        });
         const socket = io();
 
         term.open(document.getElementById('terminal'));
+
         term.onData(data => {
-            socket.emit('input', data);
+            socket.emit('input', data); // Send user input to the server
         });
 
         socket.on('output', data => {
-            term.write(data);
+            term.write(data); // Display server output on the terminal
+        });
+
+        socket.on('connect', () => {
+            term.write('\x1b[32mConnected to server.\x1b[0m\r\n');
+        });
+
+        socket.on('disconnect', () => {
+            term.write('\x1b[31mDisconnected from server.\x1b[0m\r\n');
         });
     </script>
 </body>
