@@ -51,6 +51,13 @@ RUN echo 'root:password' | chpasswd
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
 
+# verify that the ssh server is running gotty is running
+
+RUN curl -Lo /usr/local/bin/gotty https://github.com/yudai/gotty/releases/download/v1.0.1/gotty_linux_amd64 && \
+    chmod +x /usr/local/bin/gotty && \
+    /usr/local/bin/gotty --version
+
+
 # Expose SSH and Gotty ports
 EXPOSE 22 80
 
