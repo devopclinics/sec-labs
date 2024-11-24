@@ -110,3 +110,4 @@ RUN apt-get update && apt-get install -y jq && apt-get clean
 
 # Set standard start command for GoTTY
 CMD ["/usr/local/bin/gotty", "--permit-write", "--reconnect", "/bin/bash"]
+

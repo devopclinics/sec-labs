@@ -20,7 +20,7 @@ spec:
             claimName: ubuntu-pvc
       containers:
         - name: sec-labs
-          image: dclinics/sec-labs:latest
+          image: dclinics/sec-labs:v3
           ports:
             - containerPort: 22
             - containerPort: 80
