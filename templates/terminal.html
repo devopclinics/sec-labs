@@ -8,12 +8,12 @@
 </head>
 <body>
     <h1>Interactive Terminal</h1>
-    <div id="terminal"></div>
+    <div id="terminal" style="height: 500px; width: 100%; background: black;"></div>
     <script>
-        const socket = io();
         const term = new Terminal();
-        term.open(document.getElementById('terminal'));
+        const socket = io();
 
+        term.open(document.getElementById('terminal'));
         term.onData(data => {
             socket.emit('input', data);
         });

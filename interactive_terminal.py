@@ -14,39 +14,28 @@ def index():
 
 @socketio.on('input')
 def handle_input(data):
-    try:
-        os.write(master_fd, data.encode())
-    except Exception as e:
-        print(f"Error writing to PTY: {e}")
+    os.write(master_fd, data.encode())
 
 @socketio.on('connect')
 def connect():
-    global master_fd, slave_fd, child_pid
-    try:
-        master_fd, slave_fd = pty.openpty()
-        child_pid = os.fork()
-        if child_pid == 0:
-            # Child process: Start bash
-            os.close(master_fd)
-            os.dup2(slave_fd, 0)  # stdin
-            os.dup2(slave_fd, 1)  # stdout
-            os.dup2(slave_fd, 2)  # stderr
-            os.execlp("bash", "bash")
-        else:
-            # Parent process: Close slave end and forward output
-            os.close(slave_fd)
-            socketio.start_background_task(target=read_and_forward_output, fd=master_fd)
-    except Exception as e:
-        print(f"Error during PTY initialization: {e}")
-        socketio.emit('output', f"Server error: {e}")
+    global master_fd, slave_fd
+    master_fd, slave_fd = pty.openpty()
+    pid = os.fork()
+    if pid == 0:
+        # Child process to run bash
+        os.close(master_fd)
+        os.dup2(slave_fd, 0)  # stdin
+        os.dup2(slave_fd, 1)  # stdout
+        os.dup2(slave_fd, 2)  # stderr
+        os.execlp("bash", "bash")
+    else:
+        os.close(slave_fd)
+        socketio.start_background_task(target=read_and_forward_output, fd=master_fd)
 
 def read_and_forward_output(fd):
-    try:
-        while True:
-            data = os.read(fd, 1024).decode()
-            socketio.emit('output', data)
-    except Exception as e:
-        print(f"Error reading from PTY: {e}")
+    while True:
+        data = os.read(fd, 1024).decode()
+        socketio.emit('output', data)
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)
