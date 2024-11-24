@@ -23,21 +23,10 @@ spec:
           image: dclinics/sec-labs:v1
           ports:
             - containerPort: 22
+            - containerPort: 80
           volumeMounts:
             - mountPath: /home/users
               name: user-data
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: ubuntu-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 20Gi
-
 ---
 apiVersion: v1
 kind: Service
@@ -50,6 +39,9 @@ spec:
     app: ubuntu-server
   ports:
     - protocol: TCP
-      port: 80
+      port: 22
       targetPort: 22
+    - protocol: TCP
+      port: 80
+      targetPort: 80
   type: ClusterIP

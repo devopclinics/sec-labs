@@ -46,7 +46,7 @@ RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/
 RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
 
 # Expose SSH and Gotty ports
-EXPOSE 22 8080
+EXPOSE 22 80
 
 # Entry point for SSH and Gotty
 CMD ["/bin/bash", "-c", "service ssh start && gotty -w /bin/bash"]
