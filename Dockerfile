@@ -24,6 +24,9 @@
 
 FROM ubuntu:20.04
 
+ENV DEBIAN_FRONTEND=noninteractive
+
+
 # Install necessary tools
 RUN apt-get update && apt-get install -y \
     openssh-server \
@@ -34,6 +37,9 @@ RUN apt-get update && apt-get install -y \
     vim \
     python3-pip \
     && apt-get clean
+
+
+
 
 # Install gotty for web-based terminal
 RUN curl -Lo /usr/local/bin/gotty https://github.com/yudai/gotty/releases/download/v1.0.1/gotty_linux_amd64 && \
