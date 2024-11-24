@@ -1,61 +1,77 @@
-from flask import Flask, render_template
-from flask_socketio import SocketIO
+from flask import Flask, render_template, session
+from flask_socketio import SocketIO, disconnect
 import os
 import pty
-import select
+import eventlet
+
+eventlet.monkey_patch()  # Ensures compatibility with Flask-SocketIO
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'supersecret!'
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*", manage_session=True)
 
-master_fd = None  # Master file descriptor for the terminal
+# Global variables for terminal
+terminals = {}
+sessions = {}
+
 
 @app.route('/')
 def index():
     return render_template('terminal.html')
 
+
 @socketio.on('connect')
-def on_connect():
-    global master_fd, slave_fd
-    print("Client connected")
+def connect():
+    global terminals, sessions
+    session_id = session.sid
     try:
         master_fd, slave_fd = pty.openpty()
         pid = os.fork()
         if pid == 0:
-            # Child process to run bash
             os.close(master_fd)
             os.dup2(slave_fd, 0)  # stdin
             os.dup2(slave_fd, 1)  # stdout
             os.dup2(slave_fd, 2)  # stderr
             os.execlp("bash", "bash")
         else:
-            os.close(slave_fd)  # Parent process closes slave end
-            socketio.start_background_task(target=read_and_forward_output, fd=master_fd)
+            os.close(slave_fd)
+            terminals[session_id] = master_fd
+            sessions[session_id] = True
+            print(f"Client {session_id} connected")
+            socketio.start_background_task(target=read_output, session_id=session_id)
     except Exception as e:
-        print(f"Error during terminal setup: {e}")
-        socketio.emit('output', f"Error: {e}")
+        print(f"Error during connection setup for session {session_id}: {e}")
+        disconnect()
+
 
 @socketio.on('disconnect')
-def on_disconnect():
-    print("Client disconnected")
+def disconnect_handler():
+    session_id = session.sid
+    if session_id in terminals:
+        os.close(terminals[session_id])
+        del terminals[session_id]
+        del sessions[session_id]
+    print(f"Client {session_id} disconnected")
 
-def read_and_forward_output(fd):
-    """Continuously read from the pseudo-terminal and send data to the frontend."""
-    try:
-        while True:
-            data = os.read(fd, 1024).decode()
-            socketio.emit('output', data)
-    except Exception as e:
-        print(f"Error reading output: {e}")
 
 @socketio.on('input')
-def on_input(data):
-    """Write user input to the pseudo-terminal."""
-    global master_fd
-    try:
-        os.write(master_fd, data.encode())
-    except Exception as e:
-        print(f"Error writing input: {e}")
+def handle_input(data):
+    session_id = session.sid
+    if session_id in terminals:
+        os.write(terminals[session_id], data.encode())
+    else:
+        print(f"Invalid session {session_id}, ignoring input")
+
+
+def read_output(session_id):
+    while sessions.get(session_id):
+        try:
+            data = os.read(terminals[session_id], 1024).decode()
+            socketio.emit('output', data, to=session_id)
+        except Exception as e:
+            print(f"Error reading from terminal for session {session_id}: {e}")
+            break
+
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)
