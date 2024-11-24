@@ -19,17 +19,14 @@
 
         term.open(document.getElementById('terminal'));
 
-        // Send user input to the server
         term.onData(data => {
             socket.emit('input', data);
         });
 
-        // Display server output in the terminal
         socket.on('output', data => {
             term.write(data);
         });
 
-        // Handle connection events
         socket.on('connect', () => {
             term.write('\x1b[32mConnected to server.\x1b[0m\r\n');
         });
@@ -37,7 +34,7 @@
         socket.on('disconnect', () => {
             term.write('\x1b[31mDisconnected from server.\x1b[0m\r\n');
             setTimeout(() => {
-                socket.connect(); // Reconnect automatically
+                socket.connect();
             }, 3000);
         });
     </script>

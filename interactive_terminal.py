@@ -2,26 +2,22 @@ from flask import Flask, render_template, session
 from flask_socketio import SocketIO, disconnect
 import os
 import pty
-import eventlet
-
-eventlet.monkey_patch()  # Ensures compatibility with Flask-SocketIO
+import traceback
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'supersecret!'
+app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, cors_allowed_origins="*", manage_session=True)
 
 # Global variables for terminal
 terminals = {}
 sessions = {}
 
-
 @app.route('/')
 def index():
     return render_template('terminal.html')
 
-
 @socketio.on('connect')
-def connect():
+def on_connect():
     global terminals, sessions
     session_id = session.sid
     try:
@@ -29,9 +25,9 @@ def connect():
         pid = os.fork()
         if pid == 0:
             os.close(master_fd)
-            os.dup2(slave_fd, 0)  # stdin
-            os.dup2(slave_fd, 1)  # stdout
-            os.dup2(slave_fd, 2)  # stderr
+            os.dup2(slave_fd, 0)
+            os.dup2(slave_fd, 1)
+            os.dup2(slave_fd, 2)
             os.execlp("bash", "bash")
         else:
             os.close(slave_fd)
@@ -41,18 +37,17 @@ def connect():
             socketio.start_background_task(target=read_output, session_id=session_id)
     except Exception as e:
         print(f"Error during connection setup for session {session_id}: {e}")
+        traceback.print_exc()
         disconnect()
 
-
 @socketio.on('disconnect')
-def disconnect_handler():
+def on_disconnect():
     session_id = session.sid
     if session_id in terminals:
         os.close(terminals[session_id])
         del terminals[session_id]
         del sessions[session_id]
     print(f"Client {session_id} disconnected")
-
 
 @socketio.on('input')
 def handle_input(data):
@@ -62,7 +57,6 @@ def handle_input(data):
     else:
         print(f"Invalid session {session_id}, ignoring input")
 
-
 def read_output(session_id):
     while sessions.get(session_id):
         try:
@@ -71,7 +65,6 @@ def read_output(session_id):
         except Exception as e:
             print(f"Error reading from terminal for session {session_id}: {e}")
             break
-
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)
