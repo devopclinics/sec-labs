@@ -65,44 +65,50 @@
 # # Entry point for SSH and Gotty
 # CMD ["/bin/bash", "/run_gotty.sh"]
 
+#docker build -t docker-gotty .
+FROM ubuntu:latest
 
-# Pull base image
-FROM ubuntu:20.04
+WORKDIR /app
 
-# Configure locales for UTF-8
-RUN apt-get update && apt-get install -y locales && \
-    locale-gen en_US.UTF-8 && \
-    update-locale LANG=en_US.UTF-8
+ENV PS1 "\n\n> \W \$ "
+ENV TERM=linux
+ENV PACKAGES bash
 
-# Set environment variables
-ENV LANG=C.UTF-8
+#RUN apk --no-cache add $PACKAGES
 
-# Install necessary dependencies
-RUN apt-get update && apt-get install -y \
-    ca-certificates \
-    curl \
-    wget \
-    gcc \
-    libc6-dev \
-    make \
-    locales \
-    jq \
-    && apt-get clean
+RUN apt-get update && apt-get -y install wget
+ENV GOTTY_BINARY https://github.com/yudai/gotty/releases/download/v1.0.1/gotty_linux_386.tar.gz
 
-# Configure locales for UTF-8
-RUN locale-gen C.UTF-8 && \
-    update-locale LANG=C.UTF-8
+RUN wget $GOTTY_BINARY -O gotty.tar.gz && \
+    tar -xzf gotty.tar.gz -C /usr/local/bin/ && \
+    rm gotty.tar.gz && \
+    chmod +x /usr/local/bin/gotty
 
-# Install GoTTY (web-based terminal)
-RUN curl -sSL -O https://github.com/yudai/gotty/releases/download/v1.0.1/gotty_linux_amd64.tar.gz && \
-    tar -xvzf gotty_linux_amd64.tar.gz && \
-    mv gotty /usr/local/bin/ && \
-    rm -f gotty_linux_amd64.tar.gz
 
-# Clean up unnecessary build dependencies
-RUN apt-get purge -y gcc make libc6-dev && \
-    apt-get autoremove -y && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+apt-get -y install apt-transport-https \
+     ca-certificates \
+     curl \
+     gnupg2 \
+     software-properties-common && \
+curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg > /tmp/dkey; apt-key add /tmp/dkey && \
+add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \
+   $(lsb_release -cs) \
+   stable" && \
+apt-get update && \
+apt-get -y install docker-ce docker-compose bash
 
-# Set standard start command for GoTTY
-CMD ["/usr/local/bin/gotty", "--permit-write", "--reconnect", "/bin/bash"]
+#Bash autocomplete
+RUN curl https://raw.githubusercontent.com/docker/docker-ce/master/components/cli/contrib/completion/bash/docker -o /etc/bash_completion.d/docker.sh
+
+#RUN service docker start
+EXPOSE 8080
+
+COPY files/home/* /root/
+COPY app $WORKDIR
+
+RUN git clone https://github.com/eshnil2000/traefik-docker-browser-letsencrypt.git /app/workshop
+ENTRYPOINT ["sh", "-c"]
+CMD ["service docker start && gotty -w docker run -v /var/run/docker.sock:/var/run/docker.sock -it --rm docker-gotty /bin/bash"]
+#CMD ["gotty --permit-write --reconnect bash"]
