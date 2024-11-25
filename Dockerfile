@@ -1,28 +1,25 @@
-# Base Image
-FROM ubuntu:20.04
+# Dockerfile
+FROM ubuntu:latest
 
-# Set environment variables to avoid interactive prompts during installation
+# Set non-interactive mode to avoid prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Update and install necessary packages
-RUN apt-get update && \
-    apt-get install -y nginx shellinabox && \
-    apt-get clean
+RUN apt-get update && apt-get install -y \
+    wget \
+    curl \
+    build-essential \
+    git \
+    tmux \
+    bash \
+    && apt-get clean
 
-# Create directories for certificates inside the container
-RUN mkdir -p /home/dev/sec-labs/cert
+# Install GoTTY (Web-based terminal tool)
+RUN wget -O /usr/local/bin/gotty https://github.com/yudai/gotty/releases/download/v1.0.1/gotty_linux_amd64 && \
+    chmod +x /usr/local/bin/gotty
 
-# Copy Nginx configuration and certificates into the container
-COPY nginx.conf /etc/nginx/nginx.conf
-COPY cert/certificate.pem /home/dev/sec-labs/cert/certificate.pem
-COPY cert/certificate.key /home/dev/sec-labs/cert/certificate.key
+# Expose the web terminal on port 8080
+EXPOSE 8080
 
-# Ensure correct permissions for certificates
-RUN chmod 644 /home/dev/sec-labs/cert/certificate.pem && \
-    chmod 600 /home/dev/sec-labs/cert/certificate.key
-
-# Expose Nginx and Shellinabox ports
-EXPOSE 80 443 4200
-
-# Start Nginx and Shellinabox
-CMD ["/bin/bash", "-c", "service nginx start && shellinaboxd --no-beep --disable-peer-check --cert=/home/dev/sec-labs/cert/certificate.pem --key=/home/dev/sec-labs/cert/certificate.key -s /:root:root:/root:/bin/bash"]
+# Run gotty to expose the bash terminal
+CMD ["gotty", "-w", "/bin/bash"]
