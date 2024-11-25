@@ -1,20 +1,51 @@
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: ubuntu-ingress
+#   annotations:
+#     nginx.ingress.kubernetes.io/rewrite-target: /
+#     nginx.ingress.kubernetes.io/ssl-redirect: "false"
+# spec:
+#   rules:
+#     - host: localhost
+#       http:
+#         paths:
+#           - path: /
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: ubuntu-server-service
+#                 port:
+#                   number: 4200
+
+
+# ubuntu-shell-ingress.yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ubuntu-ingress
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
+  tls:
+  - hosts:
+    - localhost
+    secretName: ubuntu-server-tls
   rules:
-    - host: localhost
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: ubuntu-server-service
-                port:
-                  number: 5000
-       
+  - host: localhost
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ubuntu-server-service
+            port:
+              number: 80
+      - path: /terminal
+        pathType: Prefix
+        backend:
+          service:
+            name: ubuntu-server-service
+            port:
+              number: 4200

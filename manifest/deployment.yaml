@@ -18,15 +18,26 @@ spec:
         - name: user-data
           persistentVolumeClaim:
             claimName: ubuntu-pvc
+        - name: certs
+          hostPath:
+            path: "/home/dev/sec-labs/cert" # Path on the Kubernetes node where the certificates are stored
+            type: DirectoryOrCreate
       containers:
         - name: sec-labs
-          image: dclinics/sec-labs:v9
+          image: dclinics/sec-labs:sh
           ports:
             - containerPort: 22
-            - containerPort: 5000
+            # - containerPort: 5000
+            - containerPort: 4200
           volumeMounts:
             - mountPath: /home/users
               name: user-data
+            - name: tls-certificates
+              mountPath: "/home/dev/sec-labs/cert"
+              readOnly: true
+            - name: tls-certificates
+              mountPath: "/home/dev/sec-labs/cert"
+              readOnly: true
 ---
 apiVersion: v1
 kind: Service
@@ -44,7 +55,6 @@ spec:
       targetPort: 22
     - protocol: TCP
       name: web-terminal
-      port: 5000
-      targetPort: 5000
-  type: ClusterIP
-
+      port: 4200
+      targetPort: 4200
+  type: ClusterIP 
