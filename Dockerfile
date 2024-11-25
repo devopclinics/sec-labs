@@ -8,15 +8,18 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
     wget \
     curl \
+    tar \
     build-essential \
     git \
     tmux \
     bash \
     && apt-get clean
 
-# Install GoTTY (Web-based terminal tool)
-RUN wget -O /usr/local/bin/gotty https://github.com/yudai/gotty/releases/download/v1.0.1/gotty_linux_amd64 && \
-    chmod +x /usr/local/bin/gotty
+# Download and install GoTTY
+RUN wget -O /tmp/gotty.tar.gz https://github.com/yudai/gotty/releases/download/v1.0.1/gotty_linux_amd64.tar.gz && \
+    tar -xvf /tmp/gotty.tar.gz -C /usr/local/bin && \
+    chmod +x /usr/local/bin/gotty && \
+    rm /tmp/gotty.tar.gz
 
 # Expose the web terminal on port 8080
 EXPOSE 8080
