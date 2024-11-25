@@ -1,28 +1,28 @@
-# Dockerfile
+# Use the latest Ubuntu image
 FROM ubuntu:latest
 
-# Set non-interactive mode to avoid prompts during package installation
-ENV DEBIAN_FRONTEND=noninteractive
+# Set environment variables
+ENV LANG=C.UTF-8
 
-# Update and install necessary packages
+# Update and install dependencies
 RUN apt-get update && apt-get install -y \
-    wget \
     curl \
+    jq \
     tar \
-    build-essential \
-    git \
-    tmux \
     bash \
-    && apt-get clean
+    build-essential \
+    ca-certificates && \
+    apt-get clean
 
-# Download and install GoTTY
-RUN wget -O /tmp/gotty.tar.gz https://github.com/yudai/gotty/releases/download/v1.0.1/gotty_linux_amd64.tar.gz && \
-    tar -xvf /tmp/gotty.tar.gz -C /usr/local/bin && \
+# Install GoTTY pre-compiled binary
+RUN curl -sSL -O https://github.com/yudai/gotty/releases/download/v1.0.1/gotty_linux_amd64.tar.gz && \
+    tar -xvf gotty_linux_amd64.tar.gz && \
+    mv gotty /usr/local/bin/ && \
     chmod +x /usr/local/bin/gotty && \
-    rm /tmp/gotty.tar.gz
+    rm -f gotty_linux_amd64.tar.gz
 
-# Expose the web terminal on port 8080
+# Expose the port for GoTTY
 EXPOSE 8080
 
-# Run gotty to expose the bash terminal
-CMD ["gotty", "-w", "/bin/bash"]
+# Set standard start command for GoTTY
+CMD ["/usr/local/bin/gotty", "--permit-write", "--reconnect", "/bin/bash"]
