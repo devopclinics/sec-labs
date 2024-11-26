@@ -10,13 +10,15 @@ spec:
   hostPath:
     path: /data/users
 ---
+# pv-pvc.yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: ubuntu-pvc
+  name: user-session-pvc
+  namespace: terminal-app
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 20Gi
+      storage: 1Gi
