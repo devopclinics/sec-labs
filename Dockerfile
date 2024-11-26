@@ -26,4 +26,4 @@ RUN mkdir -p /user_sessions
 EXPOSE 8080
 
 # Set standard start command for GoTTY with authentication and persistent session
-CMD ["/usr/local/bin/gotty", "--permit-write", "--credential", "user:password", "--reconnect", "--config-dir", "/user_sessions", "/bin/bash"]
+CMD ["/usr/local/bin/gotty", "--permit-write", "--credential", "user:password", "--reconnect", "/bin/bash"]
