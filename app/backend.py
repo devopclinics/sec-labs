@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 import os
 import subprocess
 import json
@@ -74,6 +74,10 @@ def home():
         <li><code>POST /change-password</code>: Change a user's password.</li>
     </ul>
     """, 200
+
+@app.route("/", methods=["GET"])
+def serve_frontend():
+    return send_from_directory("/app/frontend", "index.html")
 
 
 if __name__ == "__main__":

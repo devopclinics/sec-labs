@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoTTY Login</title>
+</head>
+<body>
+  <h1>GoTTY Login</h1>
+  <form id="loginForm">
+    <label for="username">Username:</label><br>
+    <input type="text" id="username" name="username" required><br><br>
+    <label for="password">Password:</label><br>
+    <input type="password" id="password" name="password" required><br><br>
+    <button type="button" onclick="login()">Login</button>
+  </form>
+  <p id="message" style="color: red;"></p>
+
+  <script>
+    async function login() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      const response = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Redirect to the assigned terminal port
+        window.location.href = `http://${window.location.hostname}:${data.port}`;
+      } else {
+        // Show error message
+        document.getElementById('message').innerText = data.message || 'Login failed';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -7,6 +7,10 @@ WORKDIR /app
 # Copy the backend script into the container
 COPY backend.py /app/backend.py
 
+# Copy the frontend files
+COPY frontend /app/frontend
+
+
 # Install Flask
 RUN pip install flask
 
