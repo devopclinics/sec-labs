@@ -10,7 +10,8 @@ spec:
     - protocol: TCP
       port: 5000
       targetPort: 5000
-  type: ClusterIP
+      nodePort: 32000  
+  type: NodePort
 ---
 apiVersion: v1
 kind: Service
