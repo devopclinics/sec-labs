@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: dclinics/sec-bk:v1.1
+        image: dclinics/sec-bk:v1.2
         command: ["python"]
         args: ["backend.py"]
         volumeMounts:

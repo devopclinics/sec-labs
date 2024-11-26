@@ -64,5 +64,17 @@ def logout():
         return jsonify({"message": "Logout successful"}), 200
     return jsonify({"message": "No active session"}), 404
 
+@app.route("/", methods=["GET"])
+def home():
+    return """
+    <h1>GoTTY Backend Service</h1>
+    <p>Welcome to the GoTTY Backend. Use the following endpoints:</p>
+    <ul>
+        <li><code>POST /login</code>: Login with a username and password.</li>
+        <li><code>POST /change-password</code>: Change a user's password.</li>
+    </ul>
+    """, 200
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
