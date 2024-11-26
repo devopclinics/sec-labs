@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gotty-frontend-files
+  namespace: terminal-app
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>GoTTY Login</title>
+    </head>
+    <body>
+        <h1>Login</h1>
+        <form id="loginForm">
+            <label for="username">Username:</label><br>
+            <input type="text" id="username" name="username"><br>
+            <label for="password">Password:</label><br>
+            <input type="password" id="password" name="password"><br><br>
+            <button type="button" onclick="login()">Login</button>
+        </form>
+    
+        <h1>Change Password</h1>
+        <form id="passwordForm">
+            <label for="currentPassword">Current Password:</label><br>
+            <input type="password" id="currentPassword" name="currentPassword"><br>
+            <label for="newPassword">New Password:</label><br>
+            <input type="password" id="newPassword" name="newPassword"><br><br>
+            <button type="button" onclick="changePassword()">Change Password</button>
+        </form>
+    
+        <script>
+            function login() {
+                fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: document.getElementById('username').value,
+                        password: document.getElementById('password').value
+                    })
+                }).then(res => res.json()).then(data => {
+                    if (data.port) {
+                        window.location.href = `http://localhost:${data.port}`;
+                    } else {
+                        alert(data.message);
+                    }
+                });
+            }
+    
+            function changePassword() {
+                fetch('/change-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: document.getElementById('username').value,
+                        current_password: document.getElementById('currentPassword').value,
+                        new_password: document.getElementById('newPassword').value
+                    })
+                }).then(res => res.json()).then(data => alert(data.message));
+            }
+        </script>
+    </body>
+    </html>

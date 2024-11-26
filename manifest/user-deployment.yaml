@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gotty-terminal-<username>
+  namespace: terminal-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gotty-terminal-<username>
+  template:
+    metadata:
+      labels:
+        app: gotty-terminal-<username>
+    spec:
+      containers:
+      - name: gotty
+        image: dclinics/sec-labs:v3
+        command: ["/usr/local/bin/gotty"]
+        args: ["--permit-write", "--reconnect", "/bin/bash"]
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: user-data
+          mountPath: /data/<username>  # User-specific subdirectory
+      volumes:
+      - name: user-data
+        persistentVolumeClaim:
+          claimName: gotty-pvc

@@ -1,12 +1,70 @@
 ---
-# deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gotty-backend
+  namespace: terminal-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gotty-backend
+  template:
+    metadata:
+      labels:
+        app: gotty-backend
+    spec:
+      containers:
+      - name: backend
+        image: python:3.9
+        command: ["python"]
+        args: ["backend.py"]
+        volumeMounts:
+        - name: gotty-pvc-storage
+          mountPath: /data
+        ports:
+        - containerPort: 5000
+      volumes:
+      - name: gotty-pvc-storage
+        persistentVolumeClaim:
+          claimName: gotty-pvc
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gotty-frontend
+  namespace: terminal-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gotty-frontend
+  template:
+    metadata:
+      labels:
+        app: gotty-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: nginx:latest
+        volumeMounts:
+        - name: frontend-files
+          mountPath: /usr/share/nginx/html
+      volumes:
+      - name: frontend-files
+        configMap:
+          name: gotty-frontend-files
+---
+
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gotty-terminal
   namespace: terminal-app
 spec:
-  replicas: 1
+  replicas: 1  # Adjust dynamically for each user session
   selector:
     matchLabels:
       app: gotty-terminal
@@ -16,32 +74,16 @@ spec:
         app: gotty-terminal
     spec:
       containers:
-      - name: gotty-terminal
-        image: dclinics/sec-labs:v2
+      - name: gotty
+        image: dclinics/sec-labs:v3
+        command: ["/usr/local/bin/gotty"]
+        args: ["--permit-write", "--reconnect", "/bin/bash"]
         ports:
         - containerPort: 8080
         volumeMounts:
-        - mountPath: "/user_sessions"
-          name: session-storage
+        - name: user-data
+          mountPath: /data  # Persistent user session data
       volumes:
-      - name: session-storage
+      - name: user-data
         persistentVolumeClaim:
-          claimName: user-session-pvc
----
-
-# service.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: gotty-terminal-service
-  namespace: terminal-app
-spec:
-  selector:
-    app: gotty-terminal
-  ports:
-    - protocol: TCP
-      port: 8080    # Exposed port
-      targetPort: 8080  # Container port
-  type: NodePort
-
-
+          claimName: gotty-pvc
