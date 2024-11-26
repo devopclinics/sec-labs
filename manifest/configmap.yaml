@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: gotty-frontend-files
-  namespace: terminal-app
+  namespace: v3
 data:
   index.html: |
     <!DOCTYPE html>

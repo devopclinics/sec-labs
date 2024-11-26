@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gotty-backend
-  namespace: terminal-app
+  namespace: v3
 spec:
   replicas: 1
   selector:
@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: python:3.9
+        image: dclinics/sec-bk:v1
         command: ["python"]
         args: ["backend.py"]
         volumeMounts:
@@ -34,7 +34,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gotty-frontend
-  namespace: terminal-app
+  namespace: v3
 spec:
   replicas: 1
   selector:
@@ -62,7 +62,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gotty-terminal
-  namespace: terminal-app
+  namespace: v3
 spec:
   replicas: 1  # Adjust dynamically for each user session
   selector:
