@@ -7,12 +7,16 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+
+
 spec:
-  tls:
-  - hosts:
-    - localhost
-    secretName: gotty-tls
+  # tls:
+  # - hosts:
+  #   - localhost
+  #   secretName: gotty-tls
   rules:
   - host: localhost
     http:
@@ -21,6 +25,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: gotty-terminal
+            name: gotty-terminal-service
             port:
               number: 8080
