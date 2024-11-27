@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoTTY Login</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      color: #333;
+    }
+    form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      width: 300px;
+      text-align: center;
+    }
+    input {
+      width: 90%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    p {
+      color: red;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>GoTTY Login</h1>
+  <form id="loginForm">
+    <label for="username">Username:</label><br>
+    <input type="text" id="username" name="username" required><br>
+    <label for="password">Password:</label><br>
+    <input type="password" id="password" name="password" required><br>
+    <button type="button" onclick="login()">Login</button>
+  </form>
+  <p id="message"></p>
+
+  <script>
+    async function login() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const response = await fetch('/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Redirect to the assigned terminal port
+          window.location.href = `http://${window.location.hostname}:${data.port}`;
+        } else {
+          document.getElementById('message').innerText = data.message || 'Login failed';
+        }
+      } catch (error) {
+        document.getElementById('message').innerText = 'An error occurred. Please try again.';
+      }
+    }
+  </script>
+</body>
+</html>

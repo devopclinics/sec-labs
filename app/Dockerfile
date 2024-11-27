@@ -7,9 +7,8 @@ WORKDIR /app
 # Copy the backend script into the container
 COPY backend.py /app/backend.py
 
-# Copy the frontend files
+# Copy the login page
 COPY frontend /app/frontend
-
 
 # Install Flask
 RUN pip install flask
@@ -27,4 +26,3 @@ EXPOSE 5000
 
 # Run the backend script
 CMD ["python", "/app/backend.py"]
-
