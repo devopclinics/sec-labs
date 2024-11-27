@@ -2,15 +2,20 @@ from flask import Flask, request, jsonify, send_from_directory
 import os
 import subprocess
 import json
+import socket
+import signal
 
 app = Flask(__name__)
+
+# Reap zombie processes automatically
+signal.signal(signal.SIGCHLD, signal.SIG_IGN)
 
 # Serve the login page at the root URL
 @app.route("/", methods=["GET"])
 def serve_login_page():
     return send_from_directory("/app/frontend", "login-page.html")
 
-# Simulated in-memory credentials for demo purposes
+# Path to credentials file
 CREDENTIALS_FILE = "/data/credentials.json"
 
 # Utility function to load credentials
@@ -24,6 +29,18 @@ def load_credentials():
 def save_credentials(credentials):
     with open(CREDENTIALS_FILE, "w") as f:
         json.dump(credentials, f)
+
+# Utility function to find a free port
+def find_free_port():
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("", 0))
+        return s.getsockname()[1]
+
+# Start GoTTY Terminal for a User
+def start_terminal(username):
+    port = find_free_port()  # Dynamically find a free port
+    process = subprocess.Popen(["gotty", "--port", str(port), "--permit-write", "/bin/bash"])
+    return port
 
 # Login API
 @app.route("/login", methods=["POST"])
@@ -52,12 +69,6 @@ def change_password():
         save_credentials(credentials)
         return jsonify({"message": "Password updated successfully"}), 200
     return jsonify({"message": "Invalid username or password"}), 401
-
-# Start GoTTY Terminal for a User
-def start_terminal(username):
-    port = 9000 + hash(username) % 1000
-    process = subprocess.Popen(["gotty", "--port", str(port), "--permit-write", "/bin/bash"])
-    return port
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
