@@ -4,6 +4,7 @@ import subprocess
 import json
 import socket
 import signal
+import socket
 
 app = Flask(__name__)
 
@@ -33,7 +34,8 @@ def save_credentials(credentials):
 # Utility function to find a free port
 def find_free_port():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind(("", 0))
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.bind(('', 0))
         return s.getsockname()[1]
 
 # Start GoTTY Terminal for a User
