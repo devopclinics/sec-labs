@@ -49,16 +49,20 @@ def find_free_port():
 def start_terminal(username):
     port = find_free_port()
     try:
+        logging.info(f"Starting gotty on port {port}")
         process = subprocess.Popen(
-            ["gotty", "--port", str(port), "--permit-write", "/bin/bash"],
-            stdout=subprocess.DEVNULL,  # Suppress stdout
-            stderr=subprocess.DEVNULL,  # Suppress stderr
+            ["gotty", "--address", "0.0.0.0", "--port", str(port), "--permit-write", "/bin/bash"],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
-        logging.info(f"Started terminal for user '{username}' on port {port}.")
+        stdout, stderr = process.communicate()
+        logging.info(f"Gotty stdout: {stdout.decode()}")
+        logging.error(f"Gotty stderr: {stderr.decode()}")
         return port
     except Exception as e:
         logging.error(f"Failed to start terminal for user '{username}': {e}")
         raise
+
+
 
 # Login API
 @app.route("/login", methods=["POST"])
