@@ -4,9 +4,12 @@ import subprocess
 import json
 import socket
 import signal
-import socket
+import logging
 
 app = Flask(__name__)
+
+# Setup basic logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 # Reap zombie processes automatically
 signal.signal(signal.SIGCHLD, signal.SIG_IGN)
@@ -21,21 +24,18 @@ CREDENTIALS_FILE = "/data/credentials.json"
 
 # Utility function to load credentials
 def load_credentials():
-    # Check if the credentials file exists
     if not os.path.exists(CREDENTIALS_FILE):
-        # Create the file with default credentials
+        logging.info("Credentials file not found. Creating with default credentials.")
         default_credentials = {"admin": "password"}
         save_credentials(default_credentials)
-    # Load and return credentials
     with open(CREDENTIALS_FILE, "r") as f:
         return json.load(f)
 
 # Utility function to save credentials
 def save_credentials(credentials):
-    os.makedirs(os.path.dirname(CREDENTIALS_FILE), exist_ok=True)  # Ensure the directory exists
+    os.makedirs(os.path.dirname(CREDENTIALS_FILE), exist_ok=True)
     with open(CREDENTIALS_FILE, "w") as f:
         json.dump(credentials, f, indent=4)
-
 
 # Utility function to find a free port
 def find_free_port():
@@ -45,57 +45,57 @@ def find_free_port():
                 return port
     raise Exception("No free ports available")
 
-# # Start GoTTY Terminal for a User
-# def start_terminal(username):
-#     port = find_free_port()  # Dynamically find a free port
-#     process = subprocess.Popen(["gotty", "--port", str(port), "--permit-write", "/bin/bash"])
-#     return port
-
 # Function to start the GoTTY terminal for a user
 def start_terminal(username):
-    port = find_free_port()  # Assign a free port
+    port = find_free_port()
     try:
         process = subprocess.Popen(
             ["gotty", "--port", str(port), "--permit-write", "/bin/bash"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+            stdout=subprocess.DEVNULL,  # Suppress stdout
+            stderr=subprocess.DEVNULL,  # Suppress stderr
         )
-        stdout, stderr = process.communicate()
-        if stderr:
-            print(f"Error starting gotty: {stderr.decode()}")
+        logging.info(f"Started terminal for user '{username}' on port {port}.")
         return port
     except Exception as e:
-        print(f"Failed to start gotty: {e}")
+        logging.error(f"Failed to start terminal for user '{username}': {e}")
         raise
 
 # Login API
 @app.route("/login", methods=["POST"])
 def login():
-    data = request.json
-    credentials = load_credentials()
-    username = data.get("username")
-    password = data.get("password")
+    try:
+        data = request.json
+        credentials = load_credentials()
+        username = data.get("username")
+        password = data.get("password")
 
-    if username in credentials and credentials[username] == password:
-        port = start_terminal(username)
-        return jsonify({"message": "Login successful", "port": port}), 200
-    return jsonify({"message": "Invalid credentials"}), 401
+        if username in credentials and credentials[username] == password:
+            port = start_terminal(username)
+            return jsonify({"message": "Login successful", "port": port}), 200
+        return jsonify({"message": "Invalid credentials"}), 401
+    except Exception as e:
+        logging.error(f"Error in login: {e}")
+        return jsonify({"message": "Internal server error"}), 500
 
 # Change Password API
 @app.route("/change-password", methods=["POST"])
 def change_password():
-    data = request.json
-    credentials = load_credentials()
-    username = data.get("username")
-    current_password = data.get("current_password")
-    new_password = data.get("new_password")
+    try:
+        data = request.json
+        credentials = load_credentials()
+        username = data.get("username")
+        current_password = data.get("current_password")
+        new_password = data.get("new_password")
 
-    if username in credentials and credentials[username] == current_password:
-        credentials[username] = new_password
-        save_credentials(credentials)
-        return jsonify({"message": "Password updated successfully"}), 200
-    return jsonify({"message": "Invalid username or password"}), 401
-
+        if username in credentials and credentials[username] == current_password:
+            credentials[username] = new_password
+            save_credentials(credentials)
+            logging.info(f"Password updated for user '{username}'.")
+            return jsonify({"message": "Password updated successfully"}), 200
+        return jsonify({"message": "Invalid username or password"}), 401
+    except Exception as e:
+        logging.error(f"Error in change-password: {e}")
+        return jsonify({"message": "Internal server error"}), 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
