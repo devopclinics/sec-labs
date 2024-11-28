@@ -47,20 +47,53 @@ def find_free_port():
 
 # Function to start the GoTTY terminal for a user
 def start_terminal(username):
+    """
+    Starts a GoTTY terminal for a specific user.
+
+    Args:
+        username (str): The username for whom the terminal is started.
+
+    Returns:
+        int: The port on which the terminal is running.
+
+    Raises:
+        Exception: If the terminal fails to start.
+    """
     port = find_free_port()
     try:
-        logging.info(f"Starting gotty on port {port}")
+        command = [
+            "gotty",
+            "--address", "0.0.0.0",  # Bind to all IPv4 addresses
+            "--port", str(port),     # Assign the dynamic port
+            "--permit-write",        # Allow write access in the terminal
+            "/bin/bash"              # Command to execute in the terminal
+        ]
+
+        logging.info(f"Starting gotty on port {port} with command: {' '.join(command)}")
+
+        # Start the GoTTY process
         process = subprocess.Popen(
-            ["gotty", "--address", "0.0.0.0", "--port", str(port), "--permit-write", "/bin/bash"],
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
         )
-        stdout, stderr = process.communicate()
-        logging.info(f"Gotty stdout: {stdout.decode()}")
-        logging.error(f"Gotty stderr: {stderr.decode()}")
+
+        # Add a brief delay to allow process initialization
+        time.sleep(1)
+
+        # Check if the process is running
+        if process.poll() is not None:
+            stdout, stderr = process.communicate()
+            logging.error(f"Gotty failed to start. Stdout: {stdout.decode()}, Stderr: {stderr.decode()}")
+            raise Exception(f"Failed to start GoTTY on port {port}. See logs for details.")
+
+        logging.info(f"Started GoTTY terminal for user '{username}' on port {port}.")
         return port
+
     except Exception as e:
         logging.error(f"Failed to start terminal for user '{username}': {e}")
         raise
+
 
 
 
