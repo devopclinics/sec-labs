@@ -21,28 +21,52 @@ CREDENTIALS_FILE = "/data/credentials.json"
 
 # Utility function to load credentials
 def load_credentials():
-    if os.path.exists(CREDENTIALS_FILE):
-        with open(CREDENTIALS_FILE, "r") as f:
-            return json.load(f)
-    return {}
+    # Check if the credentials file exists
+    if not os.path.exists(CREDENTIALS_FILE):
+        # Create the file with default credentials
+        default_credentials = {"admin": "password"}
+        save_credentials(default_credentials)
+    # Load and return credentials
+    with open(CREDENTIALS_FILE, "r") as f:
+        return json.load(f)
 
 # Utility function to save credentials
 def save_credentials(credentials):
+    os.makedirs(os.path.dirname(CREDENTIALS_FILE), exist_ok=True)  # Ensure the directory exists
     with open(CREDENTIALS_FILE, "w") as f:
-        json.dump(credentials, f)
+        json.dump(credentials, f, indent=4)
+
 
 # Utility function to find a free port
 def find_free_port():
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        s.bind(('', 0))
-        return s.getsockname()[1]
+    for port in range(41000, 42000):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            if s.connect_ex(("0.0.0.0", port)) != 0:
+                return port
+    raise Exception("No free ports available")
 
-# Start GoTTY Terminal for a User
+# # Start GoTTY Terminal for a User
+# def start_terminal(username):
+#     port = find_free_port()  # Dynamically find a free port
+#     process = subprocess.Popen(["gotty", "--port", str(port), "--permit-write", "/bin/bash"])
+#     return port
+
+# Function to start the GoTTY terminal for a user
 def start_terminal(username):
-    port = find_free_port()  # Dynamically find a free port
-    process = subprocess.Popen(["gotty", "--port", str(port), "--permit-write", "/bin/bash"])
-    return port
+    port = find_free_port()  # Assign a free port
+    try:
+        process = subprocess.Popen(
+            ["gotty", "--port", str(port), "--permit-write", "/bin/bash"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        stdout, stderr = process.communicate()
+        if stderr:
+            print(f"Error starting gotty: {stderr.decode()}")
+        return port
+    except Exception as e:
+        print(f"Failed to start gotty: {e}")
+        raise
 
 # Login API
 @app.route("/login", methods=["POST"])
@@ -71,6 +95,7 @@ def change_password():
         save_credentials(credentials)
         return jsonify({"message": "Password updated successfully"}), 200
     return jsonify({"message": "Invalid username or password"}), 401
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

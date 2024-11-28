@@ -14,7 +14,7 @@ COPY frontend /app/frontend
 RUN pip install flask
 
 # Install GoTTY
-RUN apt-get update && apt-get install -y curl tar && \
+RUN apt-get update && apt-get install -y curl tar net-tools && \
     curl -sSL -O https://github.com/yudai/gotty/releases/download/v1.0.1/gotty_linux_amd64.tar.gz && \
     tar -xvf gotty_linux_amd64.tar.gz && \
     mv gotty /usr/local/bin/ && \

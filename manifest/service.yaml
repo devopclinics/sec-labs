@@ -8,10 +8,19 @@ spec:
     app: gotty-backend
   ports:
     - protocol: TCP
-      port: 5000
+      port: 5000 # Backend API port
       targetPort: 5000
-      nodePort: 32000  
+      nodePort: 32000 # Fixed NodePort for the backend API
+    - protocol: TCP
+      port: 41000 # Dynamic port example
+      targetPort: 41000
+      nodePort: 32100 # Exposed NodePort for this dynamic port
+    - protocol: TCP
+      port: 41001 # Additional dynamic port
+      targetPort: 41001
+      nodePort: 32101 # Exposed NodePort for this additional port
   type: NodePort
+
 ---
 apiVersion: v1
 kind: Service

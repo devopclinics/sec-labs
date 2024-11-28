@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: dclinics/sec-bk:v1.7
+        image: dclinics/sec-bk:v1.8
         command: ["python"]
         args: ["backend.py"]
         volumeMounts:
@@ -75,7 +75,7 @@ spec:
     spec:
       containers:
       - name: gotty
-        image: dclinics/sec-labs:v3
+        image: dclinics/sec-labs:v2
         command: ["/usr/local/bin/gotty"]
         args: ["--permit-write", "--reconnect", "/bin/bash"]
         ports:
