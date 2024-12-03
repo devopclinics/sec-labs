@@ -13,27 +13,6 @@ spec:
       labels:
         app: gotty-terminal
     spec:
-      initContainers:
-      - name: init-user
-        image: ubuntu:latest  # Use a base image with useradd
-        command:
-          - /bin/bash
-          - -c
-          - |
-            # Install necessary packages and create user
-            apt-get update && apt-get install -y sudo
-            # Use the GOTTY_USER environment variable from the ConfigMap
-            echo "Creating user ${GOTTY_USER}..."
-            useradd -m -s /bin/bash ${GOTTY_USER} && \
-            echo "${GOTTY_USER} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${GOTTY_USER} && \
-            # Check user creation
-            id ${GOTTY_USER} || exit 1
-        envFrom:
-          - configMapRef:
-              name: gotty-config  # Reference the ConfigMap to get GOTTY_USER
-        securityContext:
-          runAsUser: 0  # Run the init container as root
-
       containers:
       - name: gotty-terminal
         image: dclinics/sec-labs:v3.46
@@ -47,13 +26,28 @@ spec:
           name: session-storage
         - mountPath: /etc/sudoers.d
           name: sudoers-volume  # Mount sudoers directory
-
+        command:
+          - /bin/bash
+          - -c
+          - |
+            # Install necessary packages and create user
+            apt-get update && apt-get install -y sudo
+            # Use the GOTTY_USER environment variable from the ConfigMap
+            if [ -n "$GOTTY_USER" ]; then
+              echo "Creating user ${GOTTY_USER}..."
+              useradd -m -s /bin/bash ${GOTTY_USER} && \
+              echo "${GOTTY_USER} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${GOTTY_USER} && \
+              id ${GOTTY_USER} || exit 1
+            fi
+            # Start GoTTY as the created user
+            exec gosu ${GOTTY_USER} /usr/local/bin/gotty --permit-write --reconnect /bin/bash
       volumes:
       - name: session-storage
         persistentVolumeClaim:
           claimName: user-session-pvc
       - name: sudoers-volume
         emptyDir: {}  # Empty directory to mount sudoers directory
+
 
 
 ---
