@@ -28,5 +28,5 @@ RUN curl -sSL -o /usr/local/bin/gosu https://github.com/tianon/gosu/releases/dow
 # Expose the port for GoTTY
 EXPOSE 8080
 
-# Default start command for GoTTY, will use the GOTTY_USER environment variable passed by Kubernetes
-CMD ["gosu", "${GOTTY_USER}", "gotty", "--permit-write", "--reconnect", "/bin/bash"]
+# Default entrypoint: ensure the user is created dynamically based on the GOTTY_USER environment variable
+CMD /bin/bash -c "if ! id -u ${GOTTY_USER} > /dev/null 2>&1; then useradd -m -s /bin/bash ${GOTTY_USER}; fi && gosu ${GOTTY_USER} gotty --permit-write --reconnect /bin/bash"

@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: gotty-terminal
-        image: dclinics/sec-labs:v3.4
+        image: dclinics/sec-labs:v3.41
         ports:
         - containerPort: 8080
         volumeMounts:
