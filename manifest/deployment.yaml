@@ -1,4 +1,3 @@
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -16,25 +15,25 @@ spec:
     spec:
       containers:
       - name: gotty-terminal
-        image: dclinics/sec-labs:v3  # Make sure this image is built with the updated Dockerfile
+        image: dclinics/sec-labs:v3
         ports:
         - containerPort: 8080
         volumeMounts:
         - mountPath: /user_sessions
           name: session-storage
-        env:                    # Add environment variable reference
+        env:
         - name: GOTTY_USER
-          valueFrom:
-            configMapKeyRef:
-              name: gotty-config  # Make sure this ConfigMap exists
-              key: GOTTY_USER
-        securityContext:       # Crucial for running as non-root!
-          runAsUser: 1000      # Adjust UID if necessary (see explanation below)
-          runAsGroup: 1000     # Adjust GID if necessary
+          value: "nonroot"
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          fsGroup: 1000
+          allowPrivilegeEscalation: false
       volumes:
       - name: session-storage
         persistentVolumeClaim:
           claimName: user-session-pvc
+
 
 ---
 
