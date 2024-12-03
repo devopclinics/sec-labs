@@ -22,16 +22,8 @@ RUN curl -sSL -O https://github.com/yudai/gotty/releases/download/v1.0.1/gotty_l
     chmod +x /usr/local/bin/gotty && \
     rm -f gotty_linux_amd64.tar.gz
 
-# Add entrypoint script to handle dynamic user creation and running GoTTY
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-# Switch to non-root user for running GoTTY (optional, for final security)
-# This will ensure that later steps run as root only for necessary operations (user creation)
-USER root
-
 # Expose the port for GoTTY
 EXPOSE 8080
 
-# Set entrypoint to the script that will handle user creation and running GoTTY
-ENTRYPOINT ["/entrypoint.sh"]
+# Default entrypoint: GoTTY will run with the dynamically created user
+CMD sudo -u ${GOTTY_USER} gotty --permit-write --reconnect /bin/bash

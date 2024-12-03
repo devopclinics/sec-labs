@@ -13,28 +13,43 @@ spec:
       labels:
         app: gotty-terminal
     spec:
+      initContainers:
+      - name: init-user
+        image: ubuntu:latest  # Use an image with basic utilities like useradd
+        command:
+          - /bin/bash
+          - -c
+          - |
+            apt-get update && apt-get install -y sudo
+            useradd -m -s /bin/bash ${GOTTY_USER}
+            echo "${GOTTY_USER} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${GOTTY_USER}
+        envFrom:
+          - configMapRef:
+              name: gotty-config
+        securityContext:
+          runAsUser: 0  # Run the init container as root to create the user
+
       containers:
       - name: gotty-terminal
-        image: dclinics/sec-labs:v3.44
+        image: dclinics/sec-labs:v3.43
         ports:
         - containerPort: 8080
+        envFrom:
+        - configMapRef:
+            name: gotty-config  # Pass the GOTTY_USER environment variable
         volumeMounts:
         - mountPath: /user_sessions
           name: session-storage
-        env:
-        - name: GOTTY_USER
-          valueFrom:
-            configMapKeyRef:
-              name: gotty-config
-              key: GOTTY_USER
-        securityContext:
-          runAsUser: 1010
-          runAsGroup: 1000
-          allowPrivilegeEscalation: true
+        - mountPath: /etc/sudoers.d
+          name: sudoers-volume  # Mount sudoers directory to avoid permission issues
+
       volumes:
       - name: session-storage
         persistentVolumeClaim:
           claimName: user-session-pvc
+      - name: sudoers-volume
+        emptyDir: {}  # Empty directory to mount the sudoers directory to avoid conflicts
+
 
 
 ---
