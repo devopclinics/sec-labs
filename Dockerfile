@@ -13,7 +13,6 @@ RUN apt-get update && apt-get install -y \
     bash \
     build-essential \
     ca-certificates \
-    sudo \
     && apt-get clean
 
 # Install GoTTY pre-compiled binary
@@ -23,14 +22,15 @@ RUN curl -sSL -O https://github.com/yudai/gotty/releases/download/v1.0.1/gotty_l
     chmod +x /usr/local/bin/gotty && \
     rm -f gotty_linux_amd64.tar.gz
 
-# Create a non-root user and set UID/GID
-RUN useradd -u 1010 -g 1000 -m -s /bin/bash ${GOTTY_USER}
+# Create a non-root group and user explicitly
+RUN groupadd -g 1000 ${GOTTY_USER} && \
+    useradd -u 1010 -g ${GOTTY_USER} -m -s /bin/bash ${GOTTY_USER}
 
 # Install gosu for user switching
 RUN curl -sSL -o /usr/local/bin/gosu https://github.com/tianon/gosu/releases/download/1.14/gosu-amd64 && \
     chmod +x /usr/local/bin/gosu
 
-# Ensure the non-root user's home directory and any required directories have the correct permissions
+# Ensure the non-root user's home directory and other directories have the correct permissions
 RUN mkdir -p /user_sessions && \
     chown -R ${GOTTY_USER}:${GOTTY_USER} /home/${GOTTY_USER} /user_sessions
 
