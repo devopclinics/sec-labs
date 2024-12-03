@@ -24,6 +24,10 @@ RUN curl -sSL -O https://github.com/yudai/gotty/releases/download/v1.0.1/gotty_l
 # Expose the port for GoTTY
 EXPOSE 8080
 
+# Install gosu for user switching
+RUN curl -sSL -o /usr/local/bin/gosu https://github.com/tianon/gosu/releases/download/1.14/gosu-amd64 && \
+    chmod +x /usr/local/bin/gosu
+
 # Add a user creation and switch logic
 # Default entrypoint that creates the user if it doesn't exist and switches to it
 ENTRYPOINT ["/bin/bash", "-c", " \
