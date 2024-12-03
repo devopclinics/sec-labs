@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: gotty-terminal
-        image: dclinics/sec-labs:v3.3
+        image: dclinics/sec-labs:v3.4
         ports:
         - containerPort: 8080
         volumeMounts:
@@ -23,7 +23,10 @@ spec:
           name: session-storage
         env:
         - name: GOTTY_USER
-          value: "nonroot"
+          valueFrom:
+            configMapKeyRef:
+              name: gotty-config
+              key: GOTTY_USER
         securityContext:
           runAsUser: 1010
           runAsGroup: 1000
