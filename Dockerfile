@@ -22,9 +22,9 @@ RUN curl -sSL -O https://github.com/yudai/gotty/releases/download/v1.0.1/gotty_l
     chmod +x /usr/local/bin/gotty && \
     rm -f gotty_linux_amd64.tar.gz
 
-# Create a non-root group and user explicitly
-RUN groupadd -g 1000 ${GOTTY_USER} && \
-    useradd -u 1010 -g ${GOTTY_USER} -m -s /bin/bash ${GOTTY_USER}
+# Create non-root group and user
+RUN if ! getent group 1000; then groupadd -g 1000 ${GOTTY_USER}; fi && \
+    if ! id -u 1010 > /dev/null 2>&1; then useradd -u 1010 -g ${GOTTY_USER} -m -s /bin/bash ${GOTTY_USER}; fi
 
 # Install gosu for user switching
 RUN curl -sSL -o /usr/local/bin/gosu https://github.com/tianon/gosu/releases/download/1.14/gosu-amd64 && \
