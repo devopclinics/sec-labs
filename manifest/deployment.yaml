@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: gotty-terminal
-        image: dclinics/sec-labs:v3.1
+        image: dclinics/sec-labs:v3.2
         ports:
         - containerPort: 8080
         volumeMounts:
@@ -27,7 +27,7 @@ spec:
         securityContext:
           runAsUser: 1010
           runAsGroup: 1000
-          allowPrivilegeEscalation: false
+          allowPrivilegeEscalation: true
       volumes:
       - name: session-storage
         persistentVolumeClaim:
