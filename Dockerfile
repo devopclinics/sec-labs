@@ -37,5 +37,8 @@ RUN mkdir -p /user_sessions && \
 # Expose the port for GoTTY
 EXPOSE 8080
 
-# Set standard start command for GoTTY, using gosu for user switching
-CMD ["gosu", "${GOTTY_USER}", "gotty", "--permit-write", "--reconnect", "/bin/bash"]
+# Set the correct user for the GoTTY command
+USER ${GOTTY_USER}
+
+# Set the default command to run GoTTY, using gosu for user switching
+CMD ["/usr/local/bin/gosu", "nonroot", "gotty", "--permit-write", "--reconnect", "/bin/bash"]

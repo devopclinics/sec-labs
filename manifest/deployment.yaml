@@ -25,9 +25,8 @@ spec:
         - name: GOTTY_USER
           value: "nonroot"
         securityContext:
-          runAsUser: 1000
+          runAsUser: 1010
           runAsGroup: 1000
-          fsGroup: 1000
           allowPrivilegeEscalation: false
       volumes:
       - name: session-storage
