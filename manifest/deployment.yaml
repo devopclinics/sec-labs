@@ -27,20 +27,20 @@ spec:
         - mountPath: /etc/sudoers.d
           name: sudoers-volume  # Mount sudoers directory
         command:
-          - /bin/bash
-          - -c
-          - |
-            # Install necessary packages and create user
-            apt-get update && apt-get install -y sudo
-            # Use the GOTTY_USER environment variable from the ConfigMap
-            if [ -n "$GOTTY_USER" ]; then
-              echo "Creating user ${GOTTY_USER}..."
-              useradd -m -s /bin/bash ${GOTTY_USER} && \
-              echo "${GOTTY_USER} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${GOTTY_USER} && \
-              id ${GOTTY_USER} || exit 1
-            fi
-            # Start GoTTY as the created user
-            exec gosu ${GOTTY_USER} /usr/local/bin/gotty --permit-write --reconnect /bin/bash
+        - /bin/bash
+        - -c
+        - |
+          # Install necessary packages and create user
+          apt-get update && apt-get install -y sudo
+          # Use the GOTTY_USER environment variable from the ConfigMap
+          if [ -n "$GOTTY_USER" ]; then
+            echo "Creating user ${GOTTY_USER}..."
+            useradd -m -s /bin/bash ${GOTTY_USER} && \
+            echo "${GOTTY_USER} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${GOTTY_USER} && \
+            id ${GOTTY_USER} || exit 1
+          fi
+          # Start GoTTY as the created user
+          exec gosu ${GOTTY_USER} /usr/local/bin/gotty --permit-write --reconnect /bin/bash
       volumes:
       - name: session-storage
         persistentVolumeClaim:
