@@ -15,23 +15,28 @@ spec:
     spec:
       initContainers:
       - name: init-user
-        image: ubuntu:latest  # Use an image with basic utilities like useradd
+        image: ubuntu:latest  # Use a base image with useradd
         command:
           - /bin/bash
           - -c
           - |
+            # Install necessary packages and create user
             apt-get update && apt-get install -y sudo
-            useradd -m -s /bin/bash ${GOTTY_USER}
-            echo "${GOTTY_USER} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${GOTTY_USER}
+            # Use the GOTTY_USER environment variable from the ConfigMap
+            echo "Creating user ${GOTTY_USER}..."
+            useradd -m -s /bin/bash ${GOTTY_USER} && \
+            echo "${GOTTY_USER} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${GOTTY_USER} && \
+            # Check user creation
+            id ${GOTTY_USER} || exit 1
         envFrom:
           - configMapRef:
-              name: gotty-config
+              name: gotty-config  # Reference the ConfigMap to get GOTTY_USER
         securityContext:
-          runAsUser: 0  # Run the init container as root to create the user
+          runAsUser: 0  # Run the init container as root
 
       containers:
       - name: gotty-terminal
-        image: dclinics/sec-labs:v3.43
+        image: dclinics/sec-labs:v3.46
         ports:
         - containerPort: 8080
         envFrom:
@@ -41,15 +46,14 @@ spec:
         - mountPath: /user_sessions
           name: session-storage
         - mountPath: /etc/sudoers.d
-          name: sudoers-volume  # Mount sudoers directory to avoid permission issues
+          name: sudoers-volume  # Mount sudoers directory
 
       volumes:
       - name: session-storage
         persistentVolumeClaim:
           claimName: user-session-pvc
       - name: sudoers-volume
-        emptyDir: {}  # Empty directory to mount the sudoers directory to avoid conflicts
-
+        emptyDir: {}  # Empty directory to mount sudoers directory
 
 
 ---

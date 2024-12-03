@@ -1,10 +1,9 @@
-# Use the latest Ubuntu image
 FROM ubuntu:latest
 
 # Set environment variables
 ENV LANG=C.UTF-8
 
-# Update and install dependencies
+# Install dependencies
 RUN apt-get update && apt-get install -y \
     curl \
     jq \
@@ -12,8 +11,8 @@ RUN apt-get update && apt-get install -y \
     bash \
     build-essential \
     ca-certificates \
-    sudo \
-    && apt-get clean
+    sudo && \
+    apt-get clean
 
 # Install GoTTY pre-compiled binary
 RUN curl -sSL -O https://github.com/yudai/gotty/releases/download/v1.0.1/gotty_linux_amd64.tar.gz && \
@@ -25,5 +24,14 @@ RUN curl -sSL -O https://github.com/yudai/gotty/releases/download/v1.0.1/gotty_l
 # Expose the port for GoTTY
 EXPOSE 8080
 
-# Default entrypoint: GoTTY will run with the dynamically created user
-CMD sudo -u ${GOTTY_USER} gotty --permit-write --reconnect /bin/bash
+# Add a user creation and switch logic
+# Default entrypoint that creates the user if it doesn't exist and switches to it
+ENTRYPOINT ["/bin/bash", "-c", " \
+    if [ -n \"$GOTTY_USER\" ]; then \
+        useradd -m -s /bin/bash \"$GOTTY_USER\" && \
+        echo \"$GOTTY_USER ALL=(ALL) NOPASSWD:ALL\" > /etc/sudoers.d/$GOTTY_USER; \
+    fi && \
+    exec gosu $GOTTY_USER /usr/local/bin/gotty --permit-write --reconnect /bin/bash"]
+
+# Required to run as root for the user creation
+USER root
