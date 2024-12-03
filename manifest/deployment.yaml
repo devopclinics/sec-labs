@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: gotty-terminal
-        image: dclinics/sec-labs:v2.1  # Make sure this image is built with the updated Dockerfile
+        image: dclinics/sec-labs:v3  # Make sure this image is built with the updated Dockerfile
         ports:
         - containerPort: 8080
         volumeMounts:
