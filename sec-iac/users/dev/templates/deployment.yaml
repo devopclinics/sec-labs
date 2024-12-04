@@ -1,0 +1,2 @@
+{{- include "sec-labs.sec-iac.common-deployment" . }}
+

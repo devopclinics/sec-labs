@@ -1,0 +1,10 @@
+# This is a template file for the ConfigMap resource
+{{- define "sec-labs.sec-iac.common-configmap" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $.Values.global.app.name }}-config-{{ .Values.name }}
+  namespace: {{ $.Values.global.namespace }}
+data:
+  USER_NAME: "{{ .Values.name }}"
+{{- end }}

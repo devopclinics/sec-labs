@@ -1,0 +1,6 @@
+# users/dev/Chart.yaml
+apiVersion: v2
+name: dev
+description: dev environment
+type: application
+version: 0.1.0

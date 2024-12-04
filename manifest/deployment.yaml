@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: gotty-terminal
-        image: dclinics/sec-labs:v1
+        image: dclinics/sec-labs:v1.1
         ports:
         - containerPort: 8080
         envFrom:
@@ -27,27 +27,30 @@ spec:
         - mountPath: /etc/sudoers.d
           name: sudoers-volume  # Mount sudoers directory
         command:
-        - /bin/bash
-        - -c
-        - |
-          # Install necessary packages and create user
-          apt-get update && apt-get install -y sudo
-          # Use the GOTTY_USER environment variable from the ConfigMap
-          if [ -n "$GOTTY_USER" ]; then
-            echo "Creating user ${GOTTY_USER}..."
-            useradd -m -s /bin/bash ${GOTTY_USER} && \
-            echo "${GOTTY_USER} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${GOTTY_USER} && \
-            id ${GOTTY_USER} || exit 1
-          fi
-          # Start GoTTY as the created user
-          exec gosu ${GOTTY_USER} /usr/local/bin/gotty --permit-write --reconnect /bin/bash
+          - /bin/bash
+          - -c
+          - |
+            # Set TERM variable to xterm to support clear command
+            export TERM=xterm-256color
+            chmod 755 /etc/sudoers.d
+            # Check if GOTTY_USER is set and create the user
+            if [ -n "$GOTTY_USER" ]; then
+              echo "Creating user ${GOTTY_USER}..."
+              useradd -m -s /bin/bash ${GOTTY_USER} && \
+              echo "${GOTTY_USER} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${GOTTY_USER} && \
+              id ${GOTTY_USER} || exit 1
+            fi
+
+            chmod 440 /etc/sudoers.d/${GOTTY_USER}
+            # Start GoTTY as the created user
+
+            exec gosu ${GOTTY_USER} /usr/local/bin/gotty --permit-write --reconnect /bin/bash
       volumes:
       - name: session-storage
         persistentVolumeClaim:
           claimName: user-session-pvc
       - name: sudoers-volume
         emptyDir: {}  # Empty directory to mount sudoers directory
-
 
 
 ---
@@ -65,7 +68,7 @@ spec:
     - protocol: TCP
       port: 8080    # Exposed port
       targetPort: 8080  # Container port
-  type: NodePort
+  type: ClusterIP
 
 ---
 

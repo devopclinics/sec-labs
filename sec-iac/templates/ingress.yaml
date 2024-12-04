@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $.Values.global.app.name }}-ingress
+  namespace: {{ $.Values.global.namespace }}
+  annotations:
+{{- range $key, $value := .Values.global.ingress.annotations }}
+    {{ $key }}: {{ $value }}
+{{- end }}
+spec:
+  rules:
+  - host: {{ .Values.global.ingress.host }}
+    http:
+      paths:
+{{- range .Values.users }}
+      - path: /{{ .name }}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ $.Values.global.app.name }}-{{ .name }}-svc
+            port:
+              number: {{ .service.port }}
+{{- end }}

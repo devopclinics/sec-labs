@@ -1,0 +1,53 @@
+# This is a common deployment template that can be used by all the microservices
+{{- define "sec-labs.sec-iac.common-deployment" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $.Values.global.app.name }}-{{ .Values.name }}
+  namespace: {{ $.Values.global.namespace }}
+spec:
+  replicas: {{ .replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ $.Values.global.app.name }}-{{ .Values.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ $.Values.global.app.name }}-{{ .Values.name }}
+    spec:
+      containers:
+      - name: {{ $.Values.global.app.image.containerName }}
+        image: {{ $.Values.global.app.image.repository }}:{{ $.Values.global.app.image.tag }}
+        command:
+        - /bin/bash
+        - -c
+        - |
+          # Set TERM variable to xterm to support clear command
+          export TERM=xterm-256color
+          chmod 755 /etc/sudoers.d
+          # Check if GOTTY_USER is set and create the user
+          if [ -n "$GOTTY_USER" ]; then
+            echo "Creating user ${GOTTY_USER}..."
+            useradd -m -s /bin/bash ${GOTTY_USER} && \
+            echo "${GOTTY_USER} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${GOTTY_USER} && \
+            id ${GOTTY_USER} || exit 1
+          fi
+          chmod 440 /etc/sudoers.d/${GOTTY_USER}
+          # Start GoTTY as the created user
+          exec gosu ${GOTTY_USER} /usr/local/bin/gotty --permit-write --reconnect /bin/bash
+        ports:
+        - containerPort: 8080
+        env:
+        - name: USER_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: {{ $.Values.global.app.name }}-config-{{ .Values.name }}
+              key: USER_NAME
+        volumeMounts:
+        - name: session-storage
+          mountPath: /user_sessions
+      volumes:
+      - name: session-storage
+        persistentVolumeClaim:
+          claimName: user-session-pvc-{{ .Values.name }}
+{{- end }}

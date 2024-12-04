@@ -1,0 +1,6 @@
+# users/ops/Chart.yaml
+apiVersion: v2
+name: ops
+description: ops environment
+type: application
+version: 0.1.0

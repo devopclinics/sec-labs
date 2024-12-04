@@ -1,0 +1,13 @@
+name: dev
+replicas: 2
+configMapName: labs-config-dev
+service:
+  port: 8080
+  targetPort: 8080
+pvc:
+  storage: 1Gi
+
+users:
+  - name: dev
+    service:
+      port: 8080

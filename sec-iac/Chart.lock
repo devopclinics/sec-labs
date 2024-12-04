@@ -1,0 +1,9 @@
+dependencies:
+- name: dev
+  repository: file://./users/dev
+  version: 0.1.0
+- name: ops
+  repository: file://./users/ops
+  version: 0.1.0
+digest: sha256:b1fd39d5d79d227f9ac45634d0112b6b5b58c4536c7ea9f9f1c9406f22a70c0c
+generated: "2024-12-04T10:34:30.842040307-06:00"

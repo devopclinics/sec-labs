@@ -1,0 +1,15 @@
+# This is a common service template that can be used by any microservice
+{{- define "sec-labs.sec-iac.common-service" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $.Values.global.app.name }}-{{ .Values.name }}-svc
+  namespace: {{ $.Values.global.namespace }}
+spec:
+  selector:
+    app: {{ $.Values.global.app.name }}-{{ .Values.name }}
+  ports:
+  - protocol: TCP
+    port: {{ .Values.service.port }}    # Ensure correct referencing
+    targetPort: {{ .Values.service.targetPort }}
+{{- end }}

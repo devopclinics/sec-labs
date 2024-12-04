@@ -1,0 +1,13 @@
+apiVersion: v2
+name: sec-iac
+description: A Helm chart for managing multiple user services
+type: application
+version: 0.1.0
+dependencies:
+  - name: dev
+    version: "0.1.0"
+    repository: "file://./users/dev"
+  - name: ops
+    version: "0.1.0"
+    repository: "file://./users/ops"
+

@@ -1,30 +1,19 @@
-# ingress.yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: gotty-ingress
-  namespace: terminal-app
+  namespace: sec
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
-    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
-    # cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
-
-
 spec:
-  # tls:
-  # - hosts:
-  #   - localhost
-  #   secretName: gotty-tls
   rules:
-  - host: localhost
+  - host: localhost  # You can use 127.0.0.1 as well
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: gotty-terminal-service
+            name: gotty-terminal-service  # This should match your service name
             port:
               number: 8080

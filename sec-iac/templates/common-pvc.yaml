@@ -1,0 +1,14 @@
+# This is a common PVC template that can be used to create PVCs for any application
+{{- define "sec-labs.sec-iac.common-pvc" }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: user-session-pvc-{{ .Values.name }}
+  namespace: {{ $.Values.global.namespace }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ .Values.pvc.storage }}
+{{- end }}

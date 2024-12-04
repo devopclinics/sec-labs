@@ -1,0 +1,29 @@
+global:
+  namespace: sec
+  app:
+    name: "labs" # Replace with the application name
+    image:
+      repository: dclinics/sec-labs
+      tag: v1.1
+      containerName: "labs" # Replace with the container name
+  port: 8080
+  nfs:
+    path: /mnt/nfs_share
+    server: 10.0.0.44
+  pv:
+    capacity: 10Gi
+    accessModes:
+      - ReadWriteMany
+  ingress:
+    host: localhost
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /
+
+# list of values for ingress rules
+users:
+  - name: dev
+    service:
+      port: 8080
+  - name: ops
+    service:
+      port: 8080

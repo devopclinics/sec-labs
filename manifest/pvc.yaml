@@ -1,15 +1,44 @@
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: user-data-pv
-spec:
-  capacity:
-    storage: 20Gi
-  accessModes:
-    - ReadWriteOnce
-  hostPath:
-    path: /data/users
----
+# apiVersion: v1
+# kind: PersistentVolume
+# metadata:
+#   name: user-data-pv
+# spec:
+#   capacity:
+#     storage: 20Gi
+#   accessModes:
+#     - ReadWriteOnce
+#   hostPath:
+#     path: /data/users
+# ---
+
+# # apiVersion: v1
+# kind: PersistentVolume
+# metadata:
+#   name: user-data
+# spec:
+#   capacity:
+#     storage: 5Gi
+#   accessModes:
+#     - ReadWriteOnce
+#   hostPath:
+#     path: /data/users
+# ---
+
+
+# # pv-pvc.yaml
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: user-session-pvc
+#   namespace: sec
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 1Gi
+
+
 
 apiVersion: v1
 kind: PersistentVolume
@@ -19,13 +48,12 @@ spec:
   capacity:
     storage: 5Gi
   accessModes:
-    - ReadWriteOnce
-  hostPath:
-    path: /data/users
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    path: /mnt/nfs_share    # Path on the NFS server
+    server: 10.0.0.44 # IP address or hostname of the NFS server
 ---
-
-
-# pv-pvc.yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -33,7 +61,7 @@ metadata:
   namespace: sec
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
       storage: 1Gi
