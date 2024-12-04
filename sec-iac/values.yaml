@@ -6,7 +6,7 @@ global:
       repository: dclinics/sec-labs
       tag: v1.1
       containerName: "labs" # Replace with the container name
-  port: 8080
+  port: 8090
   nfs:
     path: /mnt/nfs_share
     server: 10.0.0.44
@@ -23,7 +23,7 @@ global:
 users:
   - name: dev
     service:
-      port: 8080
+      port: 8090
   - name: ops
     service:
-      port: 8080
+      port: 8090

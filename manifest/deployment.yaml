@@ -66,8 +66,8 @@ spec:
     app: gotty-terminal
   ports:
     - protocol: TCP
-      port: 8080    # Exposed port
-      targetPort: 8080  # Container port
+      port: 8090    # Exposed port
+      targetPort: 8090  # Container port
   type: ClusterIP
 
 ---
@@ -78,4 +78,4 @@ metadata:
   name: gotty-config
   namespace: sec
 data:
-  GOTTY_USER: "appuser"  # Replace appuser with your desired username
+  GOTTY_USER: "dev"  # Replace appuser with your desired username

@@ -2,12 +2,7 @@ name: ops
 replicas: 2
 configMapName: labs-config-ops
 service:
-  port: 8080
+  port: 8090
   targetPort: 8080
 pvc:
   storage: 1Gi
-
-users:
-  - name: ops
-    service:
-      port: 8080

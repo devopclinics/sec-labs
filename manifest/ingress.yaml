@@ -16,4 +16,4 @@ spec:
           service:
             name: gotty-terminal-service  # This should match your service name
             port:
-              number: 8080
+              number: 8090

@@ -6,5 +6,5 @@ metadata:
   name: {{ $.Values.global.app.name }}-config-{{ .Values.name }}
   namespace: {{ $.Values.global.namespace }}
 data:
-  USER_NAME: "{{ .Values.name }}"
+  GOTTY_USER: "{{ .Values.name }}"
 {{- end }}
