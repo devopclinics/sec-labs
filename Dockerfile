@@ -29,7 +29,7 @@ RUN curl -sSL -o /usr/local/bin/gosu https://github.com/tianon/gosu/releases/dow
     ls -l /usr/local/bin/gosu
 
 # Expose the port for GoTTY
-EXPOSE 8080
+EXPOSE 8090
 
 # Add a user creation and switch logic
 # Default entrypoint that creates the user if it doesn't exist and switches to it
